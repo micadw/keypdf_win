@@ -9,8 +9,10 @@ import time
 import decimal
 import re
 import shutil
+import webbrowser
 
-app = Flask(__name__)
+# Configuração do Flask para templates e arquivos estáticos
+app = Flask(__name__, template_folder="resources/templates", static_folder="resources/static")
 
 # Função para verificar se uma palavra-chave está presente no texto do PDF com base nos parâmetros de similaridade
 def check_keywords_in_pdf(keywords, pdf_path, ignore_case, ignore_accents, similarity_threshold, fuzzy_match):
@@ -139,6 +141,11 @@ def download_file(filename):
     return send_from_directory(tempfile.gettempdir(), filename, as_attachment=True)
 
 if __name__ == '__main__':
-    # Definir a porta e executar o aplicativo Flask
+    # Abrir o navegador automaticamente
     port = int(os.environ.get('PORT', 5000))
+    url = f"http://127.0.0.1:{port}"
+    webbrowser.open(url)
+
+    # Iniciar o aplicativo Flask
     app.run(host='0.0.0.0', port=port, debug=False)
+

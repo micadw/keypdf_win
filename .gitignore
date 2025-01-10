@@ -3,6 +3,7 @@ venv/
 
 # Saídas do build
 dist/
+build/
 
 # Arquivos temporários
 __pycache__/

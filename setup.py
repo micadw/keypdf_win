@@ -2,6 +2,7 @@ import numpy
 import pdfminer
 import os
 from cx_Freeze import setup, Executable
+import numpy
 
 # Definir opções de build
 numpy_path = os.path.join(os.path.dirname(numpy.__file__), "core")
