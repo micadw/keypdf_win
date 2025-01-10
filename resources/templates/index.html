@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>KeyPDF Report</title>
+</head>
+<body>
+    <div class="container">
+        <h1>KeyPDF Report</h1>
+        <form method="post" enctype="multipart/form-data" id="pdf-form" action="/upload">
+            <label for="keywords">Palavras-chave (separadas por vírgula):</label><br>
+            <textarea id="keywords" name="keywords" rows="5" required></textarea><br>
+            <small class="description">Insira os nomes completos ou abreviados que deseja destacar no PDF. Para pesquisas por CPF ou expressões numéricas, insira sem pontos, hífens ou outros caracteres especiais.</small><br><br>
+            <label for="pdfs">Carregar PDFs:</label><br>
+            <input type="file" id="pdfs" name="pdfs" multiple accept="application/pdf" required><br>
+            <small class="description">Carregue os arquivos PDF nos quais deseja realizar as marcações.</small><br><br>
+            <input type="checkbox" id="ignore_accents" name="ignore_accents">
+            <label for="ignore_accents">Ignorar acentos</label><br>
+            <small class="description">Se selecionado, os acentos serão ignorados na busca.</small><br>
+            <input type="checkbox" id="ignore_case" name="ignore_case">
+            <label for="ignore_case">Ignorar maiúsculas/minúsculas</label><br>
+            <small class="description">Se selecionado, a busca ignorará diferenças entre letras maiúsculas e minúsculas.</small><br>
+            <input type="checkbox" id="fuzzy_match" name="fuzzy_match">
+            <label for="fuzzy_match">Correspondência não exata (fuzzy matching)</label><br>
+            <small class="description">Se selecionado, permite encontrar correspondências aproximadas dos nomes.</small><br>
+            <label for="fuzz_threshold">Nível de similaridade (0-100):</label><br>
+            <input type="number" id="fuzz_threshold" name="fuzz_threshold" min="0" max="100" value="80"><br>
+            <small class="description">Defina o nível de similaridade para o fuzzy matching. Valores mais altos exigem correspondências mais precisas.</small><br><br>
+            <button type="submit" id="submit-button">Processar PDFs</button>
+        </form>
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processando, por favor aguarde...</p>
+        </div>
+        <div id="success-message" class="success-message" style="display: none;">
+            <p>Processamento concluído em <span id="processing-time"></span> segundos! Seus arquivos estão prontos para download.</p>
+            <ul id="download-links"></ul>
+        </div>
+        <p class="footer">by micadatawise, 2024 - <a href="https://sites.google.com/view/mica-datawise/home" target="_blank">Home</a></p>
+        <p class="download-count">Total de PDFs baixados: {{ download_count }}</p>
+    </div>
+</body>
+<script>
+    document.querySelector('.footer').style.animation = 'fadeIn 2s ease-in-out';
+    document.querySelector('.footer').style.transition = 'all 0.5s ease-in-out';
+    document.querySelector('.footer').style.opacity = '1';
+
+    const form = document.querySelector('form');
+    const loadingDiv = document.getElementById('loading');
+    const successMessage = document.getElementById('success-message');
+    const submitButton = document.getElementById('submit-button');
+    const downloadLinks = document.getElementById('download-links');
+    const processingTimeSpan = document.getElementById('processing-time');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        loadingDiv.style.display = 'block';
+        submitButton.disabled = true;
+
+        const formData = new FormData(form);
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        loadingDiv.style.display = 'none';
+        submitButton.disabled = false;
+
+        if (response.ok) {
+            const data = await response.json();
+            processingTimeSpan.textContent = data.processing_time;
+            downloadLinks.innerHTML = '';
+            data.files.forEach(file => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = file.path;
+                a.textContent = `Baixar ${file.filename}`;
+                a.download = file.filename;
+                li.appendChild(a);
+                downloadLinks.appendChild(li);
+            });
+            successMessage.style.display = 'block';
+        } else {
+            alert('Erro ao processar os arquivos. Por favor, tente novamente.');
+        }
+    });
+</script>
+</html>

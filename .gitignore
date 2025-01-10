@@ -1,0 +1,14 @@
+# Ambientes virtuais
+venv/
+
+# Saídas do build
+dist/
+
+# Arquivos temporários
+__pycache__/
+*.pyc
+*.pyo
+
+# Informações internas
+misc/
+
